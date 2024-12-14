@@ -1,0 +1,38 @@
+
+    </div> <!-- Fermeture du div #main-content -->
+    <footer class="bg-dark text-white p-4 text-center">
+        &copy; <%= new Date().getFullYear() %> Gestion des Dettes. Tous droits réservés.
+    </footer>
+    <!-- views/partials/footer.ejs -->
+</div> <!-- Fin du container -->
+    
+<<!-- Modal de Confirmation de Suppression -->
+<%- include('confirmDeleteModal') %>
+
+<!-- Bootstrap JS et dépendances -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="/js/scripts.js"></script>
+
+<!-- Script pour gérer le modal de suppression -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    var deleteForm = document.getElementById('deleteForm');
+    var bootstrapModal = new bootstrap.Modal(confirmDeleteModal);
+
+    // Sélectionner tous les boutons de suppression
+    var deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(function(button) {
+      button.addEventListener('click', function(event) {
+        event.preventDefault(); // Empêche la soumission immédiate du formulaire
+        var form = this.closest('form');
+        var action = form.getAttribute('action');
+        deleteForm.setAttribute('action', action);
+        bootstrapModal.show();
+      });
+    });
+  });
+</script>
+</body>
+</html>

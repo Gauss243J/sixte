@@ -1,0 +1,90 @@
+<!-- views/clients/list.ejs -->
+<%- include('../partials/header') %>
+
+<h1>Liste des Clients</h1>
+<a href="/clients/add" class="btn btn-success mb-3">Ajouter un Client</a>
+
+<form class="row g-3 mb-4" method="GET" action="/clients">
+    <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Rechercher par nom" value="<%= search || '' %>">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="startDate" class="form-control" placeholder="Date de début" value="<%= startDate || '' %>">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="endDate" class="form-control" placeholder="Date de fin" value="<%= endDate || '' %>">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+    </div>
+</form>
+
+<!-- Tableau des Clients -->
+<table class="table table-striped table-hover table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Nom</th>
+            <th>Date d'Inscription</th>
+            <th>Contact</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (clients.length === 0) { %>
+            <tr>
+                <td colspan="4" class="text-center">Aucun client trouvé.</td>
+            </tr>
+        <% } else { %>
+            <% clients.forEach(function(client) { %>
+                <tr>
+                    <td><a href="/clients/<%= client._id %>"><%= client.name %></a></td>
+                    <td><%= client.registrationDate.toDateString() %></td>
+                    <td>
+                        <% if (client.contactInfo.email) { %>
+                            <span><i class="bi bi-envelope"></i> <%= client.contactInfo.email %></span><br>
+                        <% } %>
+                        <% if (client.contactInfo.phone) { %>
+                            <span><i class="bi bi-phone"></i> <%= client.contactInfo.phone %></span><br>
+                        <% } %>
+                        <% if (client.contactInfo.address) { %>
+                            <span><i class="bi bi-house"></i> <%= client.contactInfo.address %></span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <a href="/clients/<%= client._id %>" class="btn btn-info btn-sm">Détails</a>
+                        <a href="/clients/edit/<%= client._id %>" class="btn btn-warning btn-sm">Modifier</a>                      
+                        
+                    </td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<nav aria-label="Pagination des Clients">
+    <ul class="pagination justify-content-center">
+        <!-- Bouton Précédent -->
+        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>" aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Numéros de Pages -->
+        <% for(let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage == i ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>&startDate=<%= startDate || '' %>&endDate=<%= endDate || '' %>" aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<%- include('../partials/footer') %>

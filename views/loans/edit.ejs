@@ -1,0 +1,48 @@
+<!-- views/loans/edit.ejs -->
+<%- include('../partials/header') %>
+
+<h1>Modifier le Prêt</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+    <div class="alert alert-danger">
+        <ul>
+            <% errors.forEach(function(error) { %>
+                <li><%= error.msg %></li>
+            <% }) %>
+        </ul>
+    </div>
+<% } %>
+
+<form action="/loans/edit/<%= loan._id %>?_method=PUT" method="POST">
+    <div class="mb-3">
+        <label for="client" class="form-label">Client</label>
+        <select class="form-select" name="client" id="client" required>
+            <option value="">Sélectionner un client</option>
+            <% clients.forEach(function(clientItem) { %>
+                <option value="<%= clientItem._id %>" <%= loan.client.equals(clientItem._id) ? 'selected' : '' %>><%= clientItem.name %></option>
+            <% }) %>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="form-label">Montant du Prêt</label>
+        <input type="number" step="0.01" class="form-control" name="amount" id="amount" value="<%= loan.amount %>" required>
+    </div>
+    <div class="mb-3">
+        <label for="reason" class="form-label">Motif</label>
+        <input type="text" class="form-control" name="reason" id="reason" value="<%= loan.reason %>" required>
+    </div>
+    <div class="mb-3">
+        <label for="repaymentDate" class="form-label">Date de Remboursement</label>
+        <input type="date" class="form-control" name="repaymentDate" id="repaymentDate" value="<%= loan.repaymentDate.toISOString().split('T')[0] %>" required>
+    </div>
+    <div class="mb-3">
+        <label for="status" class="form-label">Status</label>
+        <select class="form-select" name="status" id="status" required>
+            <option value="Pending" <%= loan.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+            <option value="Repaid" <%= loan.status === 'Repaid' ? 'selected' : '' %>>Repaid</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Mettre à Jour le Prêt</button>
+</form>
+
+<%- include('../partials/footer') %>

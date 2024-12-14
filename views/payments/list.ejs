@@ -1,0 +1,86 @@
+<!-- views/payments/list.ejs -->
+<%- include('../partials/header') %>
+
+<h1>Liste des Paiements</h1>
+<a href="/payments/add" class="btn btn-success mb-3">Ajouter un Paiement</a>
+
+<!-- Formulaire de Recherche et de Filtrage -->
+<form class="row g-3 mb-4" method="GET" action="/payments">
+    <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Rechercher par nom de client" value="<%= search %>">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="startDate" class="form-control" placeholder="Date de début" value="<%= startDate %>">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="endDate" class="form-control" placeholder="Date de fin" value="<%= endDate %>">
+    </div>
+    <div class="col-md-12">
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+        <a href="/payments" class="btn btn-secondary">Réinitialiser</a>
+    </div>
+</form>
+
+<!-- Tableau des Paiements -->
+<table class="table table-striped table-hover table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Client</th>
+            <th>Prêt</th>
+            <th>Montant ($)</th>
+            <th>Date Paiement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (payments.length === 0) { %>
+            <tr>
+                <td colspan="6" class="text-center">Aucun paiement trouvé.</td>
+            </tr>
+        <% } else { %>
+            <% payments.forEach(function(payment) { %>
+                <tr>
+                    <td><a href="/clients/<%= payment.client._id %>"><%= payment.client.name %></a></td>
+                    <td><a href="/loans/<%= payment.loan._id %>"><%= payment.loan.reason %></a></td>
+                    <td><%= payment.amount.toFixed(2) %> $</td>
+                    <td><%= payment.paymentDate.toDateString() %></td>
+
+                    <td>
+                        <a href="/payments/edit/<%= payment._id %>" class="btn btn-warning btn-sm">Modifier</a>
+                        <form action="/payments/delete/<%= payment._id %>?_method=DELETE" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm delete-btn" >Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<nav aria-label="Pagination des Paiements">
+    <ul class="pagination justify-content-center">
+        <!-- Bouton Précédent -->
+        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>&startDate=<%= startDate %>&endDate=<%= endDate %>&status=<%= status %>" aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Numéros de Pages -->
+        <% for(let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage == i ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&search=<%= search %>&startDate=<%= startDate %>&endDate=<%= endDate %>&status=<%= status %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>&startDate=<%= startDate %>&endDate=<%= endDate %>&status=<%= status %>" aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,267 @@
+<!-- views/partials/header.ejs -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Dettes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Styles Flexbox pour le layout */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 56px; /* Hauteur de la navbar (56px par défaut pour Bootstrap) */
+        }
+        #main-content {
+            flex: 1;
+        }
+        footer {
+            /* Styles optionnels pour le footer */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/clients">Gestion des Dettes</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <% if (currentUser) { %>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link <% if (currentPath.startsWith('/clients')) { %>active<% } %>" href="/clients">Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <% if (currentPath.startsWith('/loans')) { %>active<% } %>" href="/loans">Prêts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <% if (currentPath.startsWith('/payments')) { %>active<% } %>" href="/payments">Paiements</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Déconnexion</a>
+                    </li>
+                </ul>
+            </div>
+            <% } else { %>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link <% if (currentPath.startsWith('/login')) { %>active<% } %>" href="/login">Connexion</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <% if (currentPath.startsWith('/register')) { %>active<% } %>" href="/register">Inscription</a>
+                    </li>
+                </ul>
+            </div>
+            <% } %>
+        </div>
+    </nav>
+    
+    <div id="main-content" class="container">
+        <% if (success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+        <% if (error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+        <% if (error && error.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+        <!-- Le contenu spécifique à chaque vue sera inséré ici -->
+        <h1>Détails du Client</h1>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">
+                        <%= client.name %> 
+                        <% if (status === 'Très Bon Payeur') { %> 
+                            <span class="badge bg-success"><%= status %></span> 
+                        <% } else if (status === 'Bon Payeur') { %> 
+                            <span class="badge bg-info"><%= status %></span> 
+                        <% } else if (status === 'Payeur Moyen') { %> 
+                            <span class="badge bg-warning"><%= status %></span> 
+                        <% } else { %> 
+                            <span class="badge bg-danger"><%= status %></span> 
+                        <% } %>
+                    </h5>
+                    <h5 class="card-title">
+                        <span class="badge bg-primary">
+                            Dettes Restantes: <%= debtsRemaining.toFixed(2) %> €
+                        </span>
+                    </h5>
+                </div>
+                <p class="card-text">
+                    <strong>Date d'Inscription:</strong> <%= client.registrationDate.toDateString() %><br>
+                    <% if (client.contactInfo.email) { %>
+                        <strong>Email:</strong> <%= client.contactInfo.email %><br>
+                    <% } %>
+                    <% if (client.contactInfo.phone) { %>
+                        <strong>Téléphone:</strong> <%= client.contactInfo.phone %><br>
+                    <% } %>
+                    <% if (client.contactInfo.address) { %>
+                        <strong>Adresse:</strong> <%= client.contactInfo.address %><br>
+                    <% } %>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Historique des Prêts -->
+        <h2>Historique des Prêts</h2>
+        <a href="/loans/add?client=<%= client._id %>" class="btn btn-success mb-3">Ajouter un Prêt</a>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Montant (€)</th>
+                    <th>Date</th>
+                    <th>Motif</th>
+                    <th>Date Remboursement</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (loans.length === 0) { %>
+                    <tr>
+                        <td colspan="6" class="text-center">Aucun prêt trouvé.</td>
+                    </tr>
+                <% } else { %>
+                    <% loans.forEach(function(loan) { %>
+                        <tr>
+                            <td><%= loan.amount.toFixed(2) %> €</td>
+                            <td><%= loan.date.toDateString() %></td>
+                            <td><%= loan.reason %></td>
+                            <td><%= loan.repaymentDate.toDateString() %></td>
+                            <td>
+                                <% if (loan.status === 'Pending') { %>
+                                    <span class="badge bg-warning text-dark"><%= loan.status %></span>
+                                <% } else if (loan.status === 'Repaid') { %>
+                                    <span class="badge bg-success"><%= loan.status %></span>
+                                <% } else if (loan.status === 'Overdue') { %>
+                                    <span class="badge bg-danger"><%= loan.status %></span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary"><%= loan.status %></span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <a href="/loans/edit/<%= loan._id %>" class="btn btn-warning btn-sm">Modifier</a>
+                                <form action="/loans/delete/<%= loan._id %>?_method=DELETE" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm delete-btn" >Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+        
+        <!-- Pagination des Prêts -->
+        <nav aria-label="Pagination des Prêts">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <%= loansPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="?loansPage=<%= loansPage - 1 %>&paymentsPage=<%= paymentsPage %>" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <% for (let i = 1; i <= totalLoansPages; i++) { %>
+                    <li class="page-item <%= loansPage === i ? 'active' : '' %>"><a class="page-link" href="?loansPage=<%= i %>&paymentsPage=<%= paymentsPage %>"><%= i %></a></li>
+                <% } %>
+                <li class="page-item <%= loansPage === totalLoansPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="?loansPage=<%= loansPage + 1 %>&paymentsPage=<%= paymentsPage %>" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Historique des Paiements -->
+        <h2 class="mt-5">Historique des Paiements</h2>
+        <a href="/payments/add?client=<%= client._id %>" class="btn btn-success mb-3">Ajouter un Paiement</a>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Prêt</th>
+                    <th>Montant (€)</th>
+                    <th>Date Paiement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (payments.length === 0) { %>
+                    <tr>
+                        <td colspan="4" class="text-center">Aucun paiement trouvé.</td>
+                    </tr>
+                <% } else { %>
+                    <% payments.forEach(function(payment) { %>
+                        <tr>
+                            <td><a href="/loans/<%= payment.loan._id %>"><%= payment.loan.reason %></a></td>
+                            <td><%= payment.amount.toFixed(2) %> €</td>
+                            <td><%= payment.paymentDate.toDateString() %></td>
+                            <td>
+                                <a href="/payments/edit/<%= payment._id %>" class="btn btn-warning btn-sm">Modifier</a>
+                                <form action="/payments/delete/<%= payment._id %>?_method=DELETE" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm delete-btn" >Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+        
+        <!-- Pagination des Paiements -->
+        <nav aria-label="Pagination des Paiements">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <%= paymentsPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="?loansPage=<%= loansPage %>&paymentsPage=<%= paymentsPage - 1 %>" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <% for (let i = 1; i <= totalPaymentsPages; i++) { %>
+                    <li class="page-item <%= paymentsPage === i ? 'active' : '' %>"><a class="page-link" href="?loansPage=<%= loansPage %>&paymentsPage=<%= i %>"><%= i %></a></li>
+                <% } %>
+                <li class="page-item <%= paymentsPage === totalPaymentsPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="?loansPage=<%= loansPage %>&paymentsPage=<%= paymentsPage + 1 %>" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+
+        <!-- views/partials/footer.ejs -->
+    </div> <!-- Fermeture du div #main-content -->
+    <footer class="bg-dark text-white p-4 text-center">
+        &copy; <%= new Date().getFullYear() %> Gestion des Dettes. Tous droits réservés.
+    </footer>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+/* public/css/styles.css */
+
+body {
+    padding-top: 70px;
+}
+
+.table a {
+    text-decoration: none;
+}
+
+.badge {
+    margin-left: 10px;
+}
+
+.card-title {
+    font-size: 1.5rem;
+}
+
+.btn-link {
+    padding: 0;
+}
+
+/* Exemple de personnalisation des boutons Bootstrap */
+.btn-primary {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+.btn-success {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+/* Personnaliser les formulaires Bootstrap */
+.form-control {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+body {
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}

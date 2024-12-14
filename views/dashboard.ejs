@@ -1,0 +1,288 @@
+<!-- views/dashboard.ejs -->
+<%- include('partials/header') %>
+
+<h1>Dashboard</h1>
+
+<!-- Row pour les cartes de statistiques -->
+<div class="row">
+
+        <!-- Carte 1 : Total Prêts -->
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-primary mb-4">
+                <div class="card-header">Total Prêts</div>
+                <div class="card-body">
+                    <h5 class="card-title"><%= totalLoans %></h5>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Carte 2 : Total Paiements -->
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-success mb-4">
+                <div class="card-header">Total Paiements</div>
+                <div class="card-body">
+                    <h5 class="card-title"><%= totalPayments %></h5>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Carte 3 : Montant Total Prêté -->
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-warning mb-4">
+                <div class="card-header">Montant Total Prêté</div>
+                <div class="card-body">
+                    <h5 class="card-title"><%= totalAmountLoaned %>$</h5>
+                </div>
+            </div>
+        </div>  
+    <!-- Carte 4 : Montant Total Remboursé -->
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-danger mb-4">
+            <div class="card-header">Montant Total Remboursé</div>
+            <div class="card-body">
+                <h5 class="card-title"><%= totalAmountPaid %> $</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu de Filtrage -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <form method="GET" action="/dashboard">
+            <div class="input-group">
+                <label class="input-group-text" for="timeFilter">Filtrer par période</label>
+                <select class="form-select" id="timeFilter" name="timeFilter">
+                    <option value="all" <%= timeFilter === 'all' ? 'selected' : '' %>>Tout</option>
+                    <option value="7d" <%= timeFilter === '7d' ? 'selected' : '' %>>7 Jours</option>
+                    <option value="1m" <%= timeFilter === '1m' ? 'selected' : '' %>>1 Mois</option>
+                    <option value="3m" <%= timeFilter === '3m' ? 'selected' : '' %>>3 Mois</option>
+                    <option value="6m" <%= timeFilter === '6m' ? 'selected' : '' %>>6 Mois</option>
+                    <option value="1y" <%= timeFilter === '1y' ? 'selected' : '' %>>1 An</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<h2>Graphiques</h2>
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="paymentsChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="loansChart"></canvas>
+    </div>
+</div>
+
+
+<h2 class="mt-5">Prêts Récents</h2>
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Motif</th>
+            <th>Date</th>
+            <th>Date Remboursement</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (recentLoans.length === 0) { %>
+            <tr>
+                <td colspan="6" class="text-center">Aucun prêt trouvé.</td>
+            </tr>
+        <% } else { %>
+            <% recentLoans.forEach(function(loan) { %>
+                <tr>
+                    <td><a href="/clients/<%= loan.client._id %>"><%= loan.client.name %></a></td>
+                    <td><%= loan.amount %> $</td>
+                    <td><%= loan.reason %></td>
+                    <td><%= loan.date.toDateString() %></td>
+                    <td><%= loan.repaymentDate.toDateString() %></td>
+                    <td>
+                        <% if (loan.status === 'Pending') { %>
+                            <span class="badge bg-warning text-dark"><%= loan.status %></span>
+                        <% } else if (loan.status === 'Repaid') { %>
+                            <span class="badge bg-success"><%= loan.status %></span>
+                        <% } else if (loan.status === 'Overdue') { %>
+                            <span class="badge bg-danger"><%= loan.status %></span>
+                        <% } else { %>
+                            <span class="badge bg-secondary"><%= loan.status %></span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<!-- Pagination pour Prêts Récents -->
+<nav aria-label="Pagination des Prêts Récents">
+    <ul class="pagination justify-content-center">
+        <!-- Bouton Précédent -->
+        <li class="page-item <%= recentLoansPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?recentLoansPage=<%= recentLoansPage - 1 %>&recentPaymentsPage=<%= recentPaymentsPage %>" aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Numéros de Pages -->
+        <% for (let i = 1; i <= totalRecentLoansPages; i++) { %>
+            <li class="page-item <%= recentLoansPage === i ? 'active' : '' %>">
+                <a class="page-link" href="?recentLoansPage=<%= i %>&recentPaymentsPage=<%= recentPaymentsPage %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item <%= recentLoansPage === totalRecentLoansPages ? 'disabled' : '' %>">
+            <a class="page-link" href="?recentLoansPage=<%= recentLoansPage + 1 %>&recentPaymentsPage=<%= recentPaymentsPage %>" aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<h2 class="mt-5">Paiements Récents</h2>
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Client</th>
+            <th>Prêt</th>
+            <th>Montant</th>
+            <th>Date Paiement</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (recentPayments.length === 0) { %>
+            <tr>
+                <td colspan="4" class="text-center">Aucun paiement trouvé.</td>
+            </tr>
+        <% } else { %>
+            <% recentPayments.forEach(function(payment) { %>
+                <tr>
+                    <td><a href="/clients/<%= payment.client._id %>"><%= payment.client.name %></a></td>
+                    <td><a href="/loans/<%= payment.loan._id %>"><%= payment.loan.reason %></a></td>
+                    <td><%= payment.amount %> $</td>
+                    <td><%= payment.paymentDate.toDateString() %></td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<!-- Pagination pour Paiements Récents -->
+<nav aria-label="Pagination des Paiements Récents">
+    <ul class="pagination justify-content-center">
+        <!-- Bouton Précédent -->
+        <li class="page-item <%= recentPaymentsPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?recentLoansPage=<%= recentLoansPage %>&recentPaymentsPage=<%= recentPaymentsPage - 1 %>" aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Numéros de Pages -->
+        <% for (let i = 1; i <= totalRecentPaymentsPages; i++) { %>
+            <li class="page-item <%= recentPaymentsPage === i ? 'active' : '' %>">
+                <a class="page-link" href="?recentLoansPage=<%= recentLoansPage %>&recentPaymentsPage=<%= i %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item <%= recentPaymentsPage === totalRecentPaymentsPages ? 'disabled' : '' %>">
+            <a class="page-link" href="?recentLoansPage=<%= recentLoansPage %>&recentPaymentsPage=<%= recentPaymentsPage + 1 %>" aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<h2 class="mt-5">Rappels de Paiement Approchants</h2>
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Client</th>
+            <th>Prêt</th>
+            <th>Montant</th>
+            <th>Date Remboursement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (upcomingLoans.length === 0) { %>
+            <tr>
+                <td colspan="5" class="text-center">Aucun rappel de paiement imminent.</td>
+            </tr>
+        <% } else { %>
+            <% upcomingLoans.forEach(function(loan) { %>
+                <tr>
+                    <td><a href="/clients/<%= loan.client._id %>"><%= loan.client.name %></a></td>
+                    <td><%= loan.reason %></td>
+                    <td><strong><%= loan.amount %> $</strong></td>
+                    <td><%= loan.repaymentDate.toDateString() %></td>
+                    <td>
+                        <form action="/sms/send-reminder/<%= loan._id %>" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-warning btn-sm">Envoyer SMS Rappel</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } %>
+    </tbody>
+</table>
+<div> </div>
+<!-- Graphiques avec Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const paymentsData = JSON.parse('<%- JSON.stringify(paymentsByDate) %>');
+    const loansData = JSON.parse('<%- JSON.stringify(loansByDate) %>');
+
+    const paymentsChartCtx = document.getElementById('paymentsChart').getContext('2d');
+    const loansChartCtx = document.getElementById('loansChart').getContext('2d');
+
+    const paymentsLabels = paymentsData.map(item => item._id);
+    const paymentsTotals = paymentsData.map(item => item.total);
+
+    const loansLabels = loansData.map(item => item._id);
+    const loansTotals = loansData.map(item => item.total);
+
+    new Chart(paymentsChartCtx, {
+        type: 'line',
+        data: {
+            labels: paymentsLabels,
+            datasets: [{
+                label: 'Paiements par Date',
+                data: paymentsTotals,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    new Chart(loansChartCtx, {
+        type: 'line',
+        data: {
+            labels: loansLabels,
+            datasets: [{
+                label: 'Prêts par Date',
+                data: loansTotals,
+                borderColor: 'rgba(153, 102, 255, 1)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>
+

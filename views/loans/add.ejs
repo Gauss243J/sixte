@@ -1,0 +1,41 @@
+<!-- views/loans/add.ejs -->
+<%- include('../partials/header') %>
+
+<h1>Ajouter un Prêt</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+    <div class="alert alert-danger">
+        <ul>
+            <% errors.forEach(function(error) { %>
+                <li><%= error.msg %></li>
+            <% }) %>
+        </ul>
+    </div>
+<% } %>
+
+<form action="/loans/add" method="POST">
+    <div class="mb-3">
+        <label for="client" class="form-label">Client</label>
+        <select class="form-select" name="client" id="client" required>
+            <option value="">Sélectionner un client</option>
+            <% clients.forEach(function(client) { %>
+                <option value="<%= client._id %>"><%= client.name %></option>
+            <% }) %>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="form-label">Montant du Prêt</label>
+        <input type="number" step="0.01" class="form-control" name="amount" id="amount" required>
+    </div>
+    <div class="mb-3">
+        <label for="reason" class="form-label">Motif</label>
+        <input type="text" class="form-control" name="reason" id="reason" required>
+    </div>
+    <div class="mb-3">
+        <label for="repaymentDate" class="form-label">Date de Remboursement</label>
+        <input type="date" class="form-control" name="repaymentDate" id="repaymentDate" required>
+    </div>
+    <button type="submit" class="btn btn-success">Ajouter le Prêt</button>
+</form>
+
+<%- include('../partials/footer') %>
